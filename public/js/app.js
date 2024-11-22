@@ -1,6 +1,8 @@
+console.log("Archivo JavaScript cargado correctamente");
+
 const API_BASE_URL_ESTUDIANTES = "http://localhost:8000/api/app/estudiante";
 
-// Manejo de formulario para agregar estudiantes
+// Agregar estudiante
 document.getElementById("addStudentForm").addEventListener("submit", function (e) {
   e.preventDefault();
   const cod = document.getElementById("cod").value;
@@ -16,7 +18,8 @@ document.getElementById("addStudentForm").addEventListener("submit", function (e
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error("Error al agregar estudiante: " + response.statusText);
+        console.error("Error al agregar estudiante:", response.statusText);
+        throw new Error("Error al agregar estudiante");
       }
       return response.json();
     })
@@ -35,77 +38,3 @@ document.getElementById("addStudentForm").addEventListener("submit", function (e
       alert("Error de conexión al servidor");
     });
 });
-
-// Cargar estudiantes al hacer clic en el botón
-document.getElementById("listStudentsBtn").addEventListener("click", loadStudents);
-
-function loadStudents() {
-  fetch(API_BASE_URL_ESTUDIANTES)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Error al cargar estudiantes: " + response.statusText);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      const studentsTableBody = document.querySelector("#studentsTable tbody");
-      studentsTableBody.innerHTML = "";
-      if (Array.isArray(data) && data.length === 0) {
-        const row = document.createElement("tr");
-        const cell = document.createElement("td");
-        cell.colSpan = 4;
-        cell.textContent = "No hay estudiantes registrados";
-        row.appendChild(cell);
-        studentsTableBody.appendChild(row);
-        return;
-      }
-      data.forEach((student) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${student.cod}</td>
-          <td>${student.nombres}</td>
-          <td>${student.email}</td>
-          <td>
-            <button onclick="deleteStudent('${student.cod}')">Eliminar</button>
-          </td>
-        `;
-        studentsTableBody.appendChild(row);
-      });
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      alert("Error al cargar los estudiantes");
-    });
-}
-
-function deleteStudent(cod) {
-  if (!confirm("¿Estás seguro de eliminar este estudiante?")) return;
-
-  fetch(`${API_BASE_URL_ESTUDIANTES}/${cod}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Error al eliminar el estudiante: " + response.statusText);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (data.status === 200) {
-        alert("Estudiante eliminado correctamente");
-        loadStudents();
-      } else {
-        alert(data.message || "Error al eliminar el estudiante");
-      }
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      alert("Error de conexión al servidor");
-    });
-}
-
-// Cargar estudiantes cuando se cargue la página
-document.addEventListener('DOMContentLoaded', loadStudents);
